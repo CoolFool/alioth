@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+data:
+    QDRANT_DB_HOSTS_JSON_PATH: /config/hosts.json
+    QDRANT_DB_COLLECTIONS_JSON_PATH:  /config/collections.json
+    GUNICORN_WORKERS: "8"
+    ALIOTH_HOST: "0.0.0.0"
+    ALIOTH_PORT: "1337"
+    BACKUP_SCHEDULE: "3600"
+    ALIOTH_APP_VERSION: "{{ .Chart.AppVersion }}"

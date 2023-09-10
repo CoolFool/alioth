@@ -1,0 +1,19 @@
+annotations:
+  artifacthub.io/links: |
+    - name: Chart Source
+      url: https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-statsd-exporter
+apiVersion: v2
+appVersion: v0.24.0
+description: A Helm chart for prometheus stats-exporter
+home: https://github.com/prometheus/statsd_exporter
+keywords:
+- statsd
+- prometheus
+- exporter
+maintainers:
+- email: d@rovergulf.net
+  name: scDisorder
+name: prometheus-statsd-exporter
+sources:
+- https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-statsd-exporter
+version: 0.10.0

@@ -1,0 +1,255 @@
+rabbitmq:
+  fullnameOverride: rabbitmq
+  auth:
+    user: user
+    password: supersecret
+    erlangCookie: secretcookie
+    securePassword: false
+  clustering:
+    forceBoot: true
+  metrics:
+    enabled: true
+  service:
+    type: NodePort
+  replicaCount: 3
+
+qdrant:
+  replicaCount: 3
+  fullnameOverride: qdrant
+  updateConfigurationOnChange: true
+  service:
+    type: NodePort
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "6333"
+
+minio:
+  fullnameOverride: "minio"
+  mode: standalone
+  rootUser: minio
+  rootPassword: supersecret
+  service:
+    type: NodePort
+  consoleService:
+    type: NodePort
+  users:
+    - accessKey: minio-console
+      secretKey: supersecret
+      policy: consoleAdmin
+  persistence:
+    size: 50Gi
+  buckets:
+    - name: alioth
+      policy: none
+      versioning: false
+      objectlocking: false
+  resources:
+    requests:
+      memory: 1Gi
+
+prometheus:
+  alertmanager:
+    enabled: true
+  server:
+    service:
+      type: NodePort
+
+grafana:
+  adminUser: admin
+  adminPassword: supersecret
+  service:
+    type: NodePort
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://alioth-prometheus-server
+        isDefault: true
+  dashboardProviders:
+   dashboardproviders.yaml:
+     apiVersion: 1
+     providers:
+     - name: 'default'
+       orgId: 1
+       folder: ''
+       type: file
+       disableDeletion: false
+       editable: true
+       options:
+         path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: "grafana-dashboards"
+
+
+celery-exporter:
+  env:
+    - name: CE_BROKER_URL
+      value: amqp://user:supersecret@rabbitmq.default.svc.cluster.local:5672/
+  service:
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9808"
+
+prometheus-statsd-exporter:
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "9102"
+  
+  mappings:
+    - match: "*.gunicorn.request.status.*"
+      help: "gunicorn requests status"
+      name: "gunicorn_requests_status"
+      labels:
+        app: "$1"
+        status: "$2"
+
+    - match: "*.gunicorn.requests"
+      help: "gunicorn requests count"
+      name: "gunicorn_requests"
+      labels:
+        app: "$1"
+
+    - match: "*.gunicorn.log.*"
+      help: "gunicorn log count"
+      name: "gunicorn_log_count"
+      labels:
+        app: "$1"
+        log_level: "$2"
+
+    - match: "*.gunicorn.workers"
+      help: "gunicorn workers count"
+      name: "gunicorn_workers"
+      labels:
+        app: "$1"
+
+    - match: "*.gunicorn.request.duration"
+      help: "gunicorn durations"
+      name: "gunicorn_request_duration"
+      labels:
+        app: "$1"
+
+alioth:
+  replicaCount: 1
+
+  image:
+    repository: coolfool/alioth
+    pullPolicy: Never
+    tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: "alioth"
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: "alioth"
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+
+  securityContext: {}
+
+  service:
+    type: NodePort
+    port: 1337
+
+  ingress:
+    enabled: false
+    className: "traefik"
+    annotations: 
+      ingress.kubernetes.io/ssl-redirect: "false"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  
+  aliothBackup:
+    replicaCount: 1
+    fullname: "alioth-backup"
+    podAnnotations: {}
+
+    podSecurityContext: {}
+
+    securityContext: {}
+    
+    resources: {}
+
+    autoscaling:
+      enabled: false
+
+  aliothBeat:
+    replicaCount: 1
+    fullname: "alioth-beat"
+    podAnnotations: {}
+
+    podSecurityContext: {}
+
+    securityContext: {}
+    
+    resources: {}
+
+    autoscaling:
+      enabled: false
+
+  aliothRestore:
+    replicaCount: 1
+    fullname: "alioth-restore"
+    podAnnotations: {}
+
+    podSecurityContext: {}
+
+    securityContext: {}
+    
+    resources: {}
+
+    autoscaling:
+      enabled: false
+
+  aliothIngest:
+    replicaCount: 1
+    fullname: "alioth-ingest"
+    podAnnotations: {}
+
+    podSecurityContext: {}
+
+    securityContext: {}
+    
+    resources: {}
+
+    autoscaling:
+      enabled: false

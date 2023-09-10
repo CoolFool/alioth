@@ -105,11 +105,12 @@ celerybeat.pid
 # Environments
 .env
 .venv
-!helm/env
+env/
 venv/
-!helm/ENV/
+ENV/
 env.bak/
 venv.bak/
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -127,14 +128,30 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+Footer
 
-deployment_test/
-proof-of-concept-deployments/
+#Extras
 
-*.secrets
+tests/
+docker-compose.yml
+.gitignore
+.git/
+
+helm/
+benchmark/
+
+.github/
 
 *.db
 
+docker-compose.yaml
+*.code-workspace
+Dockerfile
+**/*.pyc
+**/__pycache__/
+*.gitignore
+*.env
 snapshots/
-
 snapshots-restore/
+collections.json
+hosts.json

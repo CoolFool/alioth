@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.alioth.aliothBeat.fullname }}
+  labels:
+    helm.sh/chart: {{ include "alioth.chart" . }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/name: {{ .Values.alioth.aliothBeat.fullname }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    checksum/config.files: {{ include (print $.Template.BasePath "/configmap.alioth.files.yaml") . | sha256sum }}
+    checksum/secret: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+spec:
+  {{- if not .Values.alioth.aliothBeat.autoscaling.enabled }}
+  replicas: {{ .Values.alioth.aliothBeat.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.alioth.aliothBeat.fullname }}
+  template:
+    metadata:
+      {{- with .Values.alioth.aliothBeat.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ .Values.alioth.aliothBeat.fullname }}
+    spec:
+      {{- with .Values.alioth.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "alioth.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.alioth.aliothBeat.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.alioth.aliothBeat.fullname }}
+          securityContext:
+            {{- toYaml .Values.alioth.aliothBeat.securityContext | nindent 12 }}
+          image: "{{ .Values.alioth.image.repository }}:{{ .Values.alioth.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.alioth.image.pullPolicy }}
+          command: ["/bin/bash"]
+          args: ["-c", "make spawn-celery-beat-worker"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-config
+            - secretRef:
+                name: {{ .Chart.Name }}-secret
+          volumeMounts:
+            - name: config-files
+              mountPath: /config
+          resources:
+            {{- toYaml .Values.alioth.aliothBeat.resources | nindent 12 }}
+      volumes:
+        - name: config-files
+          configMap:
+            name: {{ .Chart.Name }}-config-files
+      {{- with .Values.alioth.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alioth.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alioth.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alioth.fullname" . }}
+  labels:
+    {{- include "alioth.labels" . | nindent 4 }}
+  annotations:
+    checksum/config.files: {{ include (print $.Template.BasePath "/configmap.alioth.files.yaml") . | sha256sum }}
+    checksum/secret: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+spec:
+  {{- if not .Values.alioth.autoscaling.enabled }}
+  replicas: {{ .Values.alioth.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "alioth.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.alioth.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "alioth.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.alioth.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "alioth.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.alioth.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.alioth.securityContext | nindent 12 }}
+          image: "{{ .Values.alioth.image.repository }}:{{ .Values.alioth.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.alioth.image.pullPolicy }}
+          command: ["/bin/bash"]
+          args: ["-c", "make run-alioth"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-config
+            - secretRef:
+                name: {{ .Chart.Name }}-secret
+          volumeMounts:
+            - name: config-files
+              mountPath: /config
+          ports:
+            - name: http
+              containerPort: {{ .Values.alioth.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.alioth.resources | nindent 12 }}
+      volumes:
+        - name: config-files
+          configMap:
+            name: {{ .Chart.Name }}-config-files
+      {{- with .Values.alioth.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alioth.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alioth.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,61 @@
+name: Docker Image and Helm chart Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: | 
+            ghcr.io/coolfool/alioth:latest
+            ghcr.io/coolfool/alioth:${{ github.ref_name }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Chart Releaser
+        run: |
+          curl -sSLo cr.tar.gz "https://github.com/helm/chart-releaser/releases/download/v1.4.0/chart-releaser_1.4.0_linux_amd64.tar.gz"
+          tar -xzf cr.tar.gz
+          rm -f cr.tar.gz
+
+      - name: Package and Release Chart
+        env:
+          CR_OWNER: CoolFool
+          CR_GIT_REPO: alioth
+          CR_PACKAGE_PATH: .cr-release-packages
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_GIT_BASE_URL: "https://api.github.com/"
+          CR_GIT_UPLOAD_URL: "https://uploads.github.com/"
+          CR_SKIP_EXISTING: true
+        run: |
+          git config user.email "gh-action@users.noreply.github.com"
+          git config user.name "gh-action"
+          ./cr package deploy/
+          ./cr upload

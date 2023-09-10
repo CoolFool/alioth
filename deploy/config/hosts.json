@@ -1,0 +1,22 @@
+{
+    "hosts": [
+      {
+        "grpc_port": "6334",
+        "host": "qdrant-0.qdrant-headless",
+        "port": "6333",
+        "prefer_grpc": "true"
+      },
+      {
+        "grpc_port": "6334",
+        "host": "qdrant-1.qdrant-headless",
+        "port": "6333",
+        "prefer_grpc": "true"
+      },
+      {
+        "grpc_port": "6334",
+        "host": "qdrant-2.qdrant-headless",
+        "port": "6333",
+        "prefer_grpc": "true"
+      }
+    ]
+}

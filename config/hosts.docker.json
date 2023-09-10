@@ -1,0 +1,10 @@
+{
+    "hosts": [
+      {
+        "grpc_port": "6334",
+        "host": "qdrant",
+        "port": "6333",
+        "prefer_grpc": "true"
+      }
+    ]
+}

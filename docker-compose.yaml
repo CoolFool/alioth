@@ -1,0 +1,107 @@
+# Strictly used for development purposes
+services:
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    networks:
+      - alioth
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - alioth
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: supersecret
+    command: server --console-address ":9001" /data
+    networks:
+      - alioth
+
+  alioth:
+    container_name: alioth
+    image: ghcr.io/coolfool/aioth:v0.0.1
+    ports:
+      - "1337:1337"
+    entrypoint: /bin/bash
+    command: -c "make run-alioth"
+    environment:
+      QDRANT_DB_HOST: qdrant
+      BROKER_HOST: rabbitmq
+      AWS_ENDPOINT_URL: http://minio
+    volumes:
+      - ./config/hosts.docker.json:/app/config/hosts.json
+    networks:
+      - alioth
+
+  alioth_celery_ingestion_worker:
+    container_name: alioth_celery_ingestion_worker
+    image: ghcr.io/coolfool/aioth:v0.0.1
+    entrypoint: /bin/bash
+    command: -c "make spawn-ingestion-celery-worker"
+    environment:
+      QDRANT_DB_HOST: qdrant
+      BROKER_HOST: rabbitmq
+      AWS_ENDPOINT_URL: http://minio
+    volumes:
+      - ./config/hosts.docker.json:/app/config/hosts.json
+    networks:
+      - alioth
+
+  alioth_celery_backup_worker:
+    container_name: alioth_celery_backup_worker
+    image: ghcr.io/coolfool/aioth:v0.0.1
+    entrypoint: /bin/bash
+    command: -c "make spawn-backup-celery-worker"
+    environment:
+      QDRANT_DB_HOST: qdrant
+      BROKER_HOST: rabbitmq
+      AWS_ENDPOINT_URL: http://minio
+    volumes:
+      - ./config/hosts.docker.json:/app/config/hosts.json
+    networks:
+      - alioth
+
+  alioth_celery_restore_worker:
+    container_name: alioth_celery_restore_worker
+    image: ghcr.io/coolfool/aioth:v0.0.1
+    entrypoint: /bin/bash
+    command: -c "make spawn-restore-celery-worker"
+    environment:
+      QDRANT_DB_HOST: qdrant
+      BROKER_HOST: rabbitmq
+      AWS_ENDPOINT_URL: http://minio
+    volumes:
+      - ./config/hosts.docker.json:/app/config/hosts.json
+    networks:
+      - alioth
+
+  alioth_celery_beat_worker:
+    container_name: alioth_celery_beat_worker
+    image: ghcr.io/coolfool/aioth:v0.0.1
+    entrypoint: /bin/bash
+    command: -c "make spawn-celery-beat-worker"
+    environment:
+      QDRANT_DB_HOST: qdrant
+      BROKER_HOST: rabbitmq
+      AWS_ENDPOINT_URL: http://minio
+    volumes:
+      - ./config/hosts.docker.json:/app/config/hosts.json
+    networks:
+      - alioth
+
+networks:
+  alioth:

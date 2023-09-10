@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "alioth"
+version = "0.1.0"
+description = ""
+authors = ["Aseem Manna <hello@aseemmanna.me>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+fastapi = "^0.103.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+gunicorn = "^21.2.0"
+qdrant-client = "^1.4.0"
+celery = {extras = ["amqp", "gevent"], version = "^5.3.4"}
+pydantic = "^2.3.0"
+pydantic-settings = "^2.0.3"
+boto3 = "^1.28.42"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.1"
+locust = "^2.16.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
