@@ -8,7 +8,7 @@ data:
     GUNICORN_WORKERS: "4"
     ALIOTH_HOST: "0.0.0.0"
     ALIOTH_PORT: "1337"
-    BACKUP_SCHEDULE: "3600"
+    BACKUP_SCHEDULE: "300"
     ALIOTH_APP_VERSION: "{{ .Chart.AppVersion }}"
     PRODUCTION: "1"
     STATSD_EXPORTER_HOST: "alioth-prometheus-statsd-exporter.default.svc.cluster.local"
