@@ -10,3 +10,4 @@ data:
     ALIOTH_PORT: "1337"
     BACKUP_SCHEDULE: "3600"
     ALIOTH_APP_VERSION: "{{ .Chart.AppVersion }}"
+    PRODUCTION: "1"

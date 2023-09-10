@@ -38,7 +38,7 @@ def get_snapshot_signed_url_from_s3(s3, prefix):
         Params={"Bucket": settings.S3_BUCKET_NAME, "Key": latest_snapshot["Key"]},
         ExpiresIn=3600,
     )
-    return url
+    return url, latest_snapshot
 
 
 def recover_collection_from_snapshot(host, snapshot_path, collection_name):
@@ -67,9 +67,9 @@ def restore_collection_handler(host, collection_name, snapshot_url):
         )
         prefix = f"collection/{collection_name}"
         logger.info("-> Generating S3 Pre-signed URL")
-        snapshot_path = get_snapshot_signed_url_from_s3(s3_client, prefix)
+        snapshot_path,latest_snapshot = get_snapshot_signed_url_from_s3(s3_client, prefix)
     logger.info(
-        f"-> Starting recovery process for collection {collection_name} on host {host.host}"
+        f"-> Starting recovery process for collection {collection_name} on host {host.host} with snapshot {latest_snapshot}"
     )
     return recover_collection_from_snapshot(host, snapshot_path, collection_name)
 

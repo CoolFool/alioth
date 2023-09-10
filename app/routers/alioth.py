@@ -2,7 +2,14 @@ import logging
 
 from fastapi import APIRouter
 
-from app.routers.schemas import IngestionBatch, Collections, Hosts, RestoreCollection, StandardResponse, HomePageResponse
+from app.routers.schemas import (
+    IngestionBatch,
+    Collections,
+    Hosts,
+    RestoreCollection,
+    StandardResponse,
+    HomePageResponse,
+)
 from app.tasks.ingestion import ingest
 from app.tasks.backup import backup_collection, backup_storage
 from app.tasks.restore import restore_collection
@@ -16,7 +23,7 @@ router = APIRouter(
 )
 
 
-@router.get("/",response_model=HomePageResponse)
+@router.get("/", response_model=HomePageResponse)
 def home():
     return HomePageResponse()
 
@@ -29,12 +36,6 @@ def ingest_handler(batch: IngestionBatch):
     except Exception as e:
         logger.exception(e)
         return StandardResponse(status_code=500)
-
-
-"""
-In distributed mode Qdrant will need the backups from a specific node (for collections as well as storage).
-So, we need to create a new client for each Qdrant node.
-"""
 
 
 @router.post("/backup/collection", response_model=StandardResponse)

@@ -22,7 +22,7 @@ echo "Alioth: Ingest data at scale into Qdrant DB Cluster (https://github.com/co
 
 # Alioth
 ALIOTH_K8S_NODE_PORT=$(get_node_port "alioth" 1337)
-echo "-> Alioth: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT"
+echo "-> Alioth Endpoint: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT/alioth/"
 echo "-> Alioth Docs: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT/docs"
 
 # Qdrant

@@ -3,8 +3,7 @@ from qdrant_client.http import models
 import os
 
 client = QdrantClient(
-    host=os.getenv("QDRANT_DB_HOST"),
-    port=os.getenv("QDRANT_DB_PORT")
+    host=os.getenv("QDRANT_DB_HOST"), port=os.getenv("QDRANT_DB_PORT")
 )
 
 print("-> Assuming a 3 node Qdrant Cluster")
