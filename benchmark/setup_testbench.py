@@ -10,7 +10,7 @@ print("-> Assuming a 3 node Qdrant Cluster")
 print("-> Creating 'movie_collection' collection")
 collection = client.recreate_collection(
     collection_name="movie_collection",
-    vectors_config=models.VectorParams(size=1024, distance=models.Distance.COSINE),
+    vectors_config=models.VectorParams(size=100, distance=models.Distance.COSINE),
     on_disk_payload=True,
     shard_number=6,
 )

@@ -10,18 +10,18 @@ from app.routers.schemas import IngestionBatch
 
 BASE_DIR = os.path.dirname(Path(__file__).parent.resolve())
 MOCK_DATA_PATH = f"{BASE_DIR}/benchmark/mock_movie_data.csv"
-
+BATCH_SIZE = int(os.getenv("ALIOTH_LOAD_TEST_BATCH_SIZE",100))
 
 class User(HttpUser):
     wait_time = between(1, 5)
 
-    @task
-    def root(self):
-        self.client.get("/")
+    # @task
+    # def root(self):
+    #     self.client.get("/")
 
     @task
     def put_records(self):
-        mock_data = json.loads(generate_json_payload(25, 1024, MOCK_DATA_PATH))["batch"]
+        mock_data = json.loads(generate_json_payload(BATCH_SIZE, 100, MOCK_DATA_PATH))["batch"]
         payload = Batch(
             ids=mock_data["ids"],
             vectors=mock_data["vectors"],

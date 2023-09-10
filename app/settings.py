@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     PORT: int = 1337
     BASE_URL_: str = f"https://{HOST}:{PORT}"
     # quantity of workers for uvicorn
-    WORKERS_COUNT: int = 1
+    WORKERS_COUNT: int = os.getenv("UVICORN_WORKERS", 4)
     # Enable uvicorn reloading
     RELOAD: bool = False
     BASE_DIR: str = os.path.dirname(Path(__file__).parent.resolve())

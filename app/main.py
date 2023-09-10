@@ -21,8 +21,12 @@ app.include_router(router=router)
 
 
 @app.get("/")
-def home():
+async def home():
     return RedirectResponse("/docs")
+
+@app.get("/healthz")
+async def healthz():
+    return 200
 
 
 housekeeping.create_bucket()  # Required so that gunicorn runs this when it preloads the app

@@ -9,6 +9,10 @@ workers = int(os.getenv("GUNICORN_WORKERS", 1))
 
 worker_class = "uvicorn.workers.UvicornWorker"
 
+threads = int(os.getenv("GUNICORN_THREADS",2))
+
+timeout = int(os.getenv("GUNICORN_TIMEOUT_SECONDS", 300))
+
 preload_app = True
 
 PRODUCTION = str(os.getenv("PRODUCTION", "False")).lower() in ("true", "1", "t")

@@ -10,9 +10,9 @@ MOCK_DATA_PATH = f"{BASE_DIR}/benchmark/mock_movie_data.csv"
 class User(HttpUser):
     wait_time = between(1, 5)
 
-    @task
-    def root(self):
-        self.client.get("/")
+    # @task
+    # def root(self):
+    #     self.client.get("/")
 
     @task
     def put_records(self):

@@ -59,11 +59,11 @@ k3d-restart-deployments:
 	kubectl config set-context k3d-alioth
 	./restart_k8s_deployments.sh
 
-deploy-alioth-local-with-local-image:
+deploy-alioth-with-local-image:
 	k3d image import -c 'alioth' coolfool/alioth:$(VERSION) 
 	cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml
 
-deploy-alioth-local-with-upstream-image:
+deploy-alioth-with-upstream-image:
 	docker pull ghcr.io/coolfool/alioth:$(VERSION) 
 	k3d image import -c 'alioth' ghcr.io/coolfool/alioth:$(VERSION) 
 	cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml --set alioth.image.repository="ghcr.io/coolfool/alioth"

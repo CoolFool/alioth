@@ -24,12 +24,12 @@ router = APIRouter(
 
 
 @router.get("/", response_model=HomePageResponse)
-def home():
+async def home():
     return HomePageResponse()
 
 
 @router.post("/ingest", response_model=StandardResponse)
-def ingest_handler(batch: IngestionBatch):
+async def ingest_handler(batch: IngestionBatch):
     try:
         ingest.delay(batch.model_dump())
         return StandardResponse(status_code=200)
@@ -39,7 +39,7 @@ def ingest_handler(batch: IngestionBatch):
 
 
 @router.post("/backup/collection", response_model=StandardResponse)
-def collection_snapshot_handler(collections: Collections):
+async def collection_snapshot_handler(collections: Collections):
     try:
         backup_collection.delay(collections.model_dump())
         return StandardResponse(status_code=200)
@@ -49,7 +49,7 @@ def collection_snapshot_handler(collections: Collections):
 
 
 @router.post("/backup/storage", response_model=StandardResponse)
-def storage_snapshot_handler(hosts: Hosts):
+async def storage_snapshot_handler(hosts: Hosts):
     try:
         backup_storage.delay(hosts.model_dump())
         return StandardResponse(status_code=200)
@@ -59,7 +59,7 @@ def storage_snapshot_handler(hosts: Hosts):
 
 
 @router.post("/restore/collection", response_model=StandardResponse)
-def restore_collection_handler(collection: RestoreCollection):
+async def restore_collection_handler(collection: RestoreCollection):
     try:
         restore_collection.delay(collection.model_dump())
         return StandardResponse(status_code=200)

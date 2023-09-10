@@ -54,6 +54,29 @@ prometheus:
   server:
     service:
       type: NodePort
+  serverFiles:
+    alerting_rules.yml:
+      groups:
+        - name: Instances
+          rules:
+            - alert: InstanceDown
+              expr: up == 0
+              for: 5m
+              labels:
+                priority: P0
+              annotations:
+                description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+                summary: 'Instance {{ $labels.instance }} down'
+        - name: Qdrant 
+          rules:
+            - alert: QdrantNodeDown
+              expr: app_info{app="qdrant"} < 1
+              for: 5s
+              labels:
+                priority: P0
+              annotations:
+                description: '{{ $labels.instance }} Qdrant node has been down for more than 30 seconds'
+                summary: 'Qdrant instance ({{ $labels.instance }}) is down'
 
 grafana:
   adminUser: admin
@@ -101,38 +124,40 @@ prometheus-statsd-exporter:
       prometheus.io/path: "/metrics"
       prometheus.io/port: "9102"
   
-  mappings:
-    - match: "*.gunicorn.request.status.*"
-      help: "gunicorn requests status"
-      name: "gunicorn_requests_status"
-      labels:
-        app: "$1"
-        status: "$2"
+  statsd:
+    mappingConfig: |-
+      mappings:
+        - match: "*.gunicorn.request.status.*"
+          help: "gunicorn requests status"
+          name: "gunicorn_requests_status"
+          labels:
+            app: "$1"
+            status: "$2"
 
-    - match: "*.gunicorn.requests"
-      help: "gunicorn requests count"
-      name: "gunicorn_requests"
-      labels:
-        app: "$1"
+        - match: "*.gunicorn.requests"
+          help: "gunicorn requests count"
+          name: "gunicorn_requests"
+          labels:
+            app: "$1"
 
-    - match: "*.gunicorn.log.*"
-      help: "gunicorn log count"
-      name: "gunicorn_log_count"
-      labels:
-        app: "$1"
-        log_level: "$2"
+        - match: "*.gunicorn.log.*"
+          help: "gunicorn log count"
+          name: "gunicorn_log_count"
+          labels:
+            app: "$1"
+            log_level: "$2"
 
-    - match: "*.gunicorn.workers"
-      help: "gunicorn workers count"
-      name: "gunicorn_workers"
-      labels:
-        app: "$1"
+        - match: "*.gunicorn.workers"
+          help: "gunicorn workers count"
+          name: "gunicorn_workers"
+          labels:
+            app: "$1"
 
-    - match: "*.gunicorn.request.duration"
-      help: "gunicorn durations"
-      name: "gunicorn_request_duration"
-      labels:
-        app: "$1"
+        - match: "*.gunicorn.request.duration"
+          help: "gunicorn durations"
+          name: "gunicorn_request_duration"
+          labels:
+            app: "$1"
 
 alioth:
   replicaCount: 1

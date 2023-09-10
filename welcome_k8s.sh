@@ -20,9 +20,10 @@ echo "INFO: Assuming Local K3D Setup with a single K8s node cluster \n"
 
 echo "Alioth: Ingest data at scale into Qdrant DB Cluster (https://github.com/coolfool/alioth) \n "
 
+echo "-> Alioth Host: $NODE_IP_ALIOTH \n"
 # Alioth
 ALIOTH_K8S_NODE_PORT=$(get_node_port "alioth" 1337)
-echo "-> Alioth Endpoint: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT/alioth/"
+echo "-> Alioth Endpoint: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT"
 echo "-> Alioth Docs: http://$NODE_IP_ALIOTH:$ALIOTH_K8S_NODE_PORT/docs"
 
 # Qdrant
@@ -30,7 +31,7 @@ QDRANT_K8S_REST_NODE_PORT=$(get_node_port "qdrant" 6333)
 echo "-> Qdrant REST Endpoint: http://$NODE_IP_ALIOTH:$QDRANT_K8S_REST_NODE_PORT"
 echo "-> Qdrant Dashboard: http://$NODE_IP_ALIOTH:$QDRANT_K8S_REST_NODE_PORT/dashboard"
 QDRANT_K8S_GRPC_NODE_PORT=$(get_node_port "qdrant" 6334)
-echo "-> Qdrant GRPC Endpoint: http://$NODE_IP_ALIOTH:$QDRANT_K8S_GRPC_NODE_PORT"
+echo "-> Qdrant GRPC Endpoint: $NODE_IP_ALIOTH:$QDRANT_K8S_GRPC_NODE_PORT"
 
 # Grafana
 GRAFANA_K8S_NODE_PORT=$(get_node_port "alioth-grafana" 80)
