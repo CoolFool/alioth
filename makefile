@@ -26,13 +26,15 @@ build:
 build-ci: 
 	docker buildx build -t coolfool/alioth:$(VERSION)  --platform=linux/amd64,linux/arm64/v8 . --output type=docker
 
-setup-test-environment:
-	docker compose up
+setup-dev-environment:
+	docker compose up rabbitmq minio qdrant
 
-test:
-	pytest
+# Yet to be implemented
+# test:
+# 	pytest
 
-run-tests-local: setup-test-environment test
+# Yet to be implemented
+# run-tests-local: setup-test-environment test
 
 setup-load-test:
 	QDRANT_DB_HOST=$(QDRANT_DB_HOST) QDRANT_DB_PORT=$(QDRANT_DB_PORT) \
