@@ -126,6 +126,10 @@
        ```bash
           make welcome_k8s
         ```
+    4. #### (Optional) Restart Alioth if required
+       ```bash
+          make k3d-restart-deployments
+       ```
       
 - ### Docker-compose (Not recommended)
    A barebones version of **Alioth** without any observability or multiple application replicas can be deployed using docker-compose although it's not recommended.
