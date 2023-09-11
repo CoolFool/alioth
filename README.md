@@ -143,9 +143,14 @@
 - ### Setup and Configuration
   1. Get the IP of the Qdrant Host (or) Service as well as the REST API Port for Kubernetes as well as docker-compose-based deployments and set them as environment variables `QDRANT_DB_HOST` and `QDRANT_DB_PORT` respectively.
      
-     1. **Docker-compose** TODO
+     1. **Docker-compose:** 
+         1. The default Docker-compose config maps the ports to host and the `QDRANT_DB_PORT` is `6333` and `QDRANT_DB_HOST` is `localhost`
         
-     2. **Kubernetes** TODO
+     2. **Kubernetes** 
+         1. Get all the service endpoints: `make welcome_k8s`
+         2. Note down the value of `Qdrant REST Endpoint` and get the host(w/o http://) (`QDRANT_DB_HOST`) and port (`QDRANT_DB_PORT`)
+
+    Set the environment variables using `export QDRANT_DB_HOST=<host>` & `export QDRANT_DB_PORT=<port>`
   
   2. (Optional) Set the `ALIOTH_LOAD_TEST_BATCH_SIZE` environment variable using `export ALIOTH_LOAD_TEST_BATCH_SIZE=n`  if required
   4. Run the command: 
@@ -176,6 +181,62 @@ Other than these services that are explicitly deployed for observability, variou
   2. QdrantNodeDown TODO:
 
 ## API Usage
+1. GET `/` -> 
+2. GET `/alioth/` -> Home
+3. POST `/alioth/ingest` -> Ingest Handler
+   ```json
+    {
+      "collection_name": "string",
+      "batch": {
+        "ids": [
+          0,
+          "string"
+        ],
+        "vectors": [
+          [
+            0
+          ]
+        ],
+        "payloads": [
+          {}
+        ]
+      }
+    }
+   ```
+3. POST `/alioth/backup/collection` -> Collection Snapshot Handler
+   ```json
+    {
+      "collections": [
+        "string"
+      ]
+    }
+   ```
+4. POST `/alioth/backup/storage` -> Storage Snapshot Handler
+   ```json
+    {
+    "hosts": [
+      {
+        "grpc_port": "6334",
+        "host": "localhost",
+        "port": "6333",
+        "prefer_grpc": "true"
+      }]
+    }
+   
+   ```
+5. POST `/alioth/restore/collection` -> Restore Collection Handler
+   ```json
+    {
+      "collection_name": "string",
+      "host": {
+        "grpc_port": "6334",
+        "host": "localhost",
+        "port": "6333",
+        "prefer_grpc": "true"
+      },
+      "snapshot_url": "string"
+    }
+   ```
 
 ## Further Improvements & Ideas:
 - Improve health checks for all internal services.
