@@ -251,7 +251,7 @@ Other than these services that are explicitly deployed for observability, variou
       }
     }
    ```
-3. POST `/alioth/backup/collection` -> Collection Snapshot Handler
+3. POST `/alioth/backup/collection` -> Collection Snapshot Handler (`string` is the collection name)
    ```json
     {
       "collections": [
@@ -272,7 +272,7 @@ Other than these services that are explicitly deployed for observability, variou
     }
    
    ```
-5. POST `/alioth/restore/collection` -> Restore Collection Handler
+5. POST `/alioth/restore/collection` -> Restore Collection Handler (`snapshot_url` is optional)
    ```json
     {
       "collection_name": "string",
