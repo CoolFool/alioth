@@ -56,9 +56,23 @@
   5. The ingestion celery worker can be horizonatally scaled based on the rate of ingestion of records. 
 
 - ### Backup & Restore mechanism
-  
+   1. You need to configure the following config files and environment variables before using Backup and Recovery mechanism implemented in Alioth IF you are setting it up manually.
+      > You don't need to configure these config files and environment variables if you are using the supported deployments method as both of the use sane defaults and should work OOTB.
+      1. Create two files `collections.json` & `hosts.json` and mount in appropriately in Alioth API and Celery Workers. Example format for these files can be found at `config/`
+      2. Set the Environment Variables `QDRANT_DB_HOSTS_JSON_PATH` and `QDRANT_DB_COLLECTIONS_JSON_PATH` to point to the path where the `collections.json` and `hosts.json` are mounted
+      3. Set the Environment Variable `BACKUP_SCHEDULE` to a number that represents the period in seconds of the Backup cron job.
+         
+
   - #### Backup
+    1. Alioth supports both collection and full storage snapshots.
+    2. A Celery beat worker periodically invokes backup tasks for collection (`app.tasks.backup.backup_collection`) and storage (`app.tasks.backup.backup_storage`)
+    2. These snapshots created periodically (based on `BACKUP_SCHEDULE` env var) are uploaded to **Minio** using `boto3`, So any S3 compliant object storage will work as storage backend.
+    3. The snapshots can also be manually invoked if and when required from the  Alioth REST API endpoints (`/alioth/backup/collection` for collection snapshots and `/alioth/backup/storage/` for storage snapshots.)
   - #### Restore
+    1. Qdrant officially only supports collection restoration from the REST API in Cluster Mode
+    2. As Alioth is primarily meant to be high scalable it supports only recovery from collection and does **not** support Full Storage recovery although snapshots are created for each Qdrant Replica incase it is needed in a worst case scenario.
+    3. Full Storage recovery in distributed mode requires individual access to nodes and clusters have to be set up manually. The Qdrant DB instance has to be started with a CLI flag that point to the snapshot. This requires too much manual intervention and is not possible with Kubernetes as Qdrant is primarily deployed in a distributed mode. It would required writing a Kubernetes Operator that does the legwork.
+       > Do note for standalone single node Qdrant DB Instance it is possible to recover from snapshots using the CLI flag (--snapshot) that Qdrant supports.
 
 ## Prerequisites
 
