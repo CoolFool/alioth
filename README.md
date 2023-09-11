@@ -82,13 +82,14 @@
    2. Install poetry for Python dependency management. (ref: https://python-poetry.org/docs/#installation)
    3. Install and configure docker w/ docker-compose (ref: https://docs.docker.com/engine/install/)
    4. Make sure `make` is properly installed and verify using  `make --help`
+   5. Clone Alioth using `git clone git@github.com:CoolFool/alioth.git` (SSH) or `git clone https://github.com/CoolFool/alioth.git` (HTTPS)
   
 -  ### For deployment
     1. Install K3d for a Kubernetes Cluster (ref: https://k3d.io/v5.6.0/#install-current-latest-release)
     2. Install Helm for deploying to Kubernetes (ref: https://helm.sh/docs/intro/install/#through-package-managers)
  
 ## Development
-  - Assuming the prerequisites are properly satified, run the following commands to get the Development environment up and running
+  - Assuming the prerequisites are properly satified and you are in the root Project directory, run the following commands to get the Development environment up and running
      1. Set up pyenv and poetry: `make deps`
      2. Get the upstream services up and running: `make dev-services`
      3. (Optional) Create a `.env` file for the environment variables that you want to override. All the supported environment variabled (OR) settings can be found in `app/settings.py`
