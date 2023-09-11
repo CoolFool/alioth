@@ -27,6 +27,11 @@ build-ci:
 	docker buildx build -t coolfool/alioth:$(VERSION)  --platform=linux/amd64,linux/arm64/v8 . --output type=docker
 
 setup-dev-environment:
+	pyenv install 3.11 -s
+	pyenv local 3.11
+	poetry config virtualenvs.create true --local
+	poetry install
+	poetry shell
 	docker compose up rabbitmq minio qdrant
 
 # Yet to be implemented

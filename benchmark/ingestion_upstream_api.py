@@ -5,6 +5,7 @@ from pathlib import Path
 
 BASE_DIR = os.path.dirname(Path(__file__).parent.resolve())
 MOCK_DATA_PATH = f"{BASE_DIR}/benchmark/mock_movie_data.csv"
+BATCH_SIZE = int(os.getenv("ALIOTH_LOAD_TEST_BATCH_SIZE",100))
 
 
 class User(HttpUser):
@@ -18,5 +19,5 @@ class User(HttpUser):
     def put_records(self):
         self.client.put(
             "/collections/movie_collection/points",
-            data=generate_json_payload(25, 1024, MOCK_DATA_PATH),
+            data=generate_json_payload(BATCH_SIZE, 100, MOCK_DATA_PATH),
         )

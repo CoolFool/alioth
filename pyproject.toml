@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "alioth"
-version = "0.1.0"
-description = ""
+version = "0.0.1"
+description = "Ingest data at scale into a Qdrant DB Cluster"
 authors = ["Aseem Manna <hello@aseemmanna.me>"]
 readme = "README.md"
 
