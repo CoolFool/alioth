@@ -98,6 +98,7 @@ services:
       QDRANT_DB_HOST: qdrant
       BROKER_HOST: rabbitmq
       AWS_ENDPOINT_URL: http://minio:9000
+      BACKUP_SCHEDULE: "300" # for demo purposes
     volumes:
       - ./config/hosts.docker.json:/app/config/hosts.json
     networks:

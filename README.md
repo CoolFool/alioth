@@ -123,9 +123,9 @@
 ## Deploy
 
 - ### Kubernetes
-    Kubernetes is the recommended way to deploy Alioth as it abstracts away and takes care of many issues involved in building a high-scalable system that can ingest data at a very fast rate. 
-
-    Although **Alioth** can be deployed on any Kubernetes cluster for demo purposes we are going to use K3d locally.
+    - Kubernetes is the recommended way to deploy Alioth as it abstracts away and takes care of many issues involved in building a high-scalable system that can ingest data at a very fast rate. 
+    - To make changes to the config that is going to be deployed you can edit the `configmap.yaml` and `secret.yaml` located at `deploy/templates` and do a `make deploy-alioth-with-upstream-image` from root directory assuming Kubernetes Cluster is already setup.
+    - Although **Alioth** can be deployed on any Kubernetes cluster for demo purposes we are going to use K3d locally.
 
     1. #### Create Kubernetes cluster using K3d
        ```bash 
@@ -150,6 +150,7 @@
       ```bash
           docker compose up
        ```
+     Alioth will be available at http://localhost:1337
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
