@@ -1,4 +1,4 @@
-<div align="center" id = "top">
+<div align="center" id="top">
     <h2>Alioth</h2>
     <h3>Ingest data at scale into a Qdrant DB Cluster</h3>
 </div>
@@ -33,6 +33,8 @@
 4. There is an easy-to-use recovery mechanism that can restore a collection on a Qdrant host from the snapshots that are stored in S3 Compliant Object storage.
 5. Observability and performance monitoring is configured using Grafana, Prometheus, Alert-manager, and various exporters (ref: [Observability](#observability))
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Architecture
 
 - ### Overview
@@ -46,6 +48,8 @@
   7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal is a huge operational effort and using the cloud would've been expensive.
   8. The API Docs are available at `/docs` from the Alioth Endpoint.
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 - ### Ingestion Pipeline
   1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply that it would just act as a proxy and increase latency for no performance gain. Collections are highly configurable and have lots of parameters that the user has to be aware of and abstracting them away is not the way to go. 
      > Do remember to disable indexing for the collection from the API if you are going to ingest large amounts of data.
@@ -53,6 +57,8 @@
   3. Once a message or payload is `POST`ed to the API, the payload is first added to the `ingest` queue, and then the invoked tasks are spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
   4. Alioth uses the `.upsert` function of the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
   5. The ingestion celery worker can be horizontally scaled based on the rate of ingestion of records. 
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 - ### Backup & Restore mechanism
    1. You need to configure the following config files and environment variables before using the Backup and Recovery mechanism implemented in Alioth **IF** you are setting it up manually.
@@ -74,6 +80,8 @@
        > Do note for standalone single node Qdrant DB Instance it is possible to recover from snapshots using the CLI flag (--snapshot) that Qdrant supports.
     4. The restoration process is manually invoked if and when required from the Alioth REST API endpoints(`/alioth/restore/collection`). This invokes a (`app.tasks.restore.restore_collection`) celery tasks that are processed and run by the restore celery worker and the queue consumed by the worker is `restore`
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Prerequisites
 
 -  ### For development
@@ -87,6 +95,9 @@
     1. Install K3d for a Kubernetes Cluster (ref: https://k3d.io/v5.6.0/#install-current-latest-release)
     2. Install Helm for deploying to Kubernetes (ref: https://helm.sh/docs/intro/install/#through-package-managers)
  
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Development
   - Assuming the prerequisites are properly satisfied and you are in the root Project directory, run the following commands to get the Development environment up and running
      1. Set up pyenv and poetry: `make deps`
@@ -106,6 +117,8 @@
      8. (Optional) To get the service endpoints for accessing the Alioth deployed on K8s: `make welcome_k8s`
      9. (Optional) To restart Alioth services on kubernetes: `make k3d-restart-deployments`
      10. (Optional) To delete Kubernetes environment including the cluster: `make clean`
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Deploy
 
@@ -138,6 +151,8 @@
           docker compose up
        ```
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Load Test
 
   1. Load testing is setup and configured using [locust](https://locust.io/)
@@ -162,6 +177,10 @@
            make load-test-alioth
         ```
   5. Visit the locust dashboard at http://0.0.0.0:8089
+  6. On the Locust Dashboard Set the **Number of users** to `50`, **Spawn rate** to `5` and set the **Host** to `Alioth Endpoint` that is available from `make welcome_k8s`
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Observability
   Observability is set up using Prometheus & Grafana. Following are the services that are deployed on Kubernetes for Observability purposes:
   
@@ -185,7 +204,9 @@ Other than these services that are explicitly deployed for observability, variou
       | ![Qdrant Dashboard Summary](static/qdrant-summary.png)  |
       | **Qdrant Dashboard (GRPC)**  |
       |  ![Qdrant Dashboard GRPC](static/qdrant-grpc.png) |
-  
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 - ### Alerts
   1. InstanceDown:
      ```yaml
@@ -231,6 +252,8 @@ Other than these services that are explicitly deployed for observability, variou
             summary: Gunicorn worker down (instance {{ $labels.instance }})
             description: "Gunicorn has less than 4 workers\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
       ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## API Usage
 1. GET `/` -> Root
@@ -290,6 +313,8 @@ Other than these services that are explicitly deployed for observability, variou
     }
    ```
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Further Improvements & Ideas:
 - Improve health checks for all internal services.
 - Implement Kubernetes Event-driven Autoscaling (KEDA) for scaling celery workers and Alioth API based on metrics such as Ready Messages in RabbitMQ, Database load experienced by Qdrant or the rate of data ingestion by Alioth API, etc.(ref: https://keda.sh/)
@@ -300,9 +325,13 @@ Other than these services that are explicitly deployed for observability, variou
 - Improve helm chart documentation (ref: https://github.com/norwoodj/helm-docs)
 - Add dashboards for Gunicorn, Celery, RabbitMQ
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Authors
 
 - [@coolfool](https://www.github.com/coolfool)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## License
 
