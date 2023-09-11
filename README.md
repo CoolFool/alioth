@@ -124,9 +124,9 @@
           make deploy-alioth-with-upstream-image
         ```
     3. #### Get the service endpoints for accessing from local
-      ```bash
-         make welcome_k8s
-      ```
+       ```bash
+          make welcome_k8s
+        ```
       
 - ### Docker-compose (Not recommended)
    A barebones version of **Alioth** without any observability or multiple application replicas can be deployed using docker-compose although it's not recommended.
