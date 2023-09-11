@@ -229,7 +229,7 @@ Other than these services that are explicitly deployed for observability, variou
       ```
 
 ## API Usage
-1. GET `/` -> 
+1. GET `/` -> Root
 2. GET `/alioth/` -> Home
 3. POST `/alioth/ingest` -> Ingest Handler
    ```json
