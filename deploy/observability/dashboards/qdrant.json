@@ -311,7 +311,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "cluster_enabled",
+          "expr": "group(cluster_enabled) by (node)",
           "instant": false,
           "legendFormat": "{{instance}}",
           "range": true,
@@ -1318,7 +1318,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "Prometheus",
           "value": "PBFA97CFB590B2093"
         },

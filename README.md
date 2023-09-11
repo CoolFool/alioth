@@ -175,10 +175,58 @@ Other than these services that are explicitly deployed for observability, variou
 
   > Due to time constraint reasons only a custom-made Qdrant Dashboard is pre-loaded in Grafana and 2 alerts are created for alert-manager. More dashboards and alerts are on the way :))
 - ### Dashboards
-  - Qdrant Dashboard TODO:
+  - Qdrant Dashboard:
+      | Qdrant Dashboard (Summary)  |
+      |---|
+      | ![Qdrant Dashboard Summary](static/qdrant-summary.png)  |
+      | **Qdrant Dashboard (GRPC)**  |
+      |  ![Qdrant Dashboard GRPC](static/qdrant-grpc.png) |
+  
 - ### Alerts
-  1. InstanceDown TODO:
-  2. QdrantNodeDown TODO:
+  1. InstanceDown:
+     ```yaml
+       - alert: InstanceDown
+          expr: up == 0
+          for: 5m
+          labels:
+            priority: P1
+          annotations:
+            description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+            summary: 'Instance {{ $labels.instance }} down'
+     ```
+  2. QdrantNodeDown:
+     ```yaml
+      - alert: QdrantNodeDown
+        expr: app_info{app="qdrant"} < 1
+        for: 0m
+        labels:
+          priority: P1
+        annotations:
+          description: '{{ $labels.instance }} Qdrant node has been down for more than 30 seconds'
+          summary: 'Qdrant instance ({{ $labels.instance }}) is down'
+     ```
+  3. RabbitmqNodeDown:
+     ```yaml
+      - alert: RabbitmqNodeDown
+        expr: sum(rabbitmq_build_info) < 3
+        for: 0m
+        labels:
+          priority: P1
+        annotations:
+          summary: Rabbitmq node down (instance {{ $labels.instance }})
+          description: "Less than 3 nodes running in RabbitMQ cluster\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+     ```
+  4. GunicornWorkersDown:
+      ```yaml
+        - alert: GunicornWorkersDown
+          expr: sum(gunicorn_workers) < 4
+          for: 0m
+          labels:
+            priority: P1
+          annotations:
+            summary: Gunicorn worker down (instance {{ $labels.instance }})
+            description: "Gunicorn has less than 4 workers\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      ```
 
 ## API Usage
 1. GET `/` -> 
