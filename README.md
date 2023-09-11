@@ -8,7 +8,7 @@
 - [Architecture](#architecture)
   - [Overview](#overview)
   - [Ingestion Pipeline](#ingestion-pipeline)
-  - [Backup & Restore Mechanism](#backup-restore-machanism)
+  - [Backup & Restore Mechanism](#backup--restore-machanism)
 - [Prerequisites](#prerequisites)
   - [For Development](#for-development)
   - [For Deployment](#for-deployment)
