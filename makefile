@@ -1,6 +1,8 @@
 # QDRANT_DB_HOST = localhost
 # QDRANT_DB_PORT = 60962
 VERSION=v0.0.1
+AUTHOR=coolfool
+APPLICATION=alioth
 
 run-alioth:
 	gunicorn app.main:app -c gunicorn.conf.py
@@ -21,19 +23,22 @@ setup-buildx:
 	docker buildx create --use --name alioth_buildx_instance
 
 build: 
-	docker buildx build -t coolfool/alioth:$(VERSION)  . --output type=docker
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) docker buildx build -t $(AUTHOR)/$(APPLICATION):$(VERSION)  . --output type=docker
 
 build-ci: 
-	docker buildx build -t coolfool/alioth:$(VERSION)  --platform=linux/amd64,linux/arm64/v8 . --output type=docker
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) docker buildx build -t $(AUTHOR)/$(APPLICATION):$(VERSION)  --platform=linux/amd64,linux/arm64/v8 . --output type=docker
 
-setup-dev-environment:
+deps:
 	pyenv install 3.11 -s
 	pyenv local 3.11
 	poetry config virtualenvs.create true --local
 	poetry install
 	poetry shell
+
+dev-services:
 	docker compose up rabbitmq minio qdrant
 
+setup-dev-environment: deps dev-environment
 # Yet to be implemented
 # test:
 # 	pytest
@@ -65,13 +70,13 @@ k3d-restart-deployments:
 	./restart_k8s_deployments.sh
 
 deploy-alioth-with-local-image:
-	k3d image import -c 'alioth' coolfool/alioth:$(VERSION) 
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) k3d image import -c 'alioth' $(AUTHOR)/$(APPLICATION):$(VERSION) 
 	cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml
 
 deploy-alioth-with-upstream-image:
-	docker pull ghcr.io/coolfool/alioth:$(VERSION) 
-	k3d image import -c 'alioth' ghcr.io/coolfool/alioth:$(VERSION) 
-	cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml --set alioth.image.repository="ghcr.io/coolfool/alioth"
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) docker pull ghcr.io/$(AUTHOR)/$(APPLICATION):$(VERSION) 
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) k3d image import -c 'alioth' ghcr.io/$(AUTHOR)/$(APPLICATION):$(VERSION) 
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml --set alioth.image.repository="ghcr.io/$(AUTHOR)/$(APPLICATION) --set alioth.image.tag="$(VERSION)"
 
 delete-alioth-deployment:
 	helm uninstall alioth 
