@@ -37,7 +37,8 @@
 ## Architecture
 
 - ### Overview
-  1. Alioth doesn't reimplement all the API endpoints available in Qdrant, it only implements endpoints that require resources and can be scaled horizontally. 
+  1. Alioth doesn't reimplement all the API endpoints available in Qdrant, it only implements endpoints that require resources and can be scaled horizontally.
+     > To make it easier to use the API use this Postman collection that implements the commonly used APIs [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/19694638-331c2888-b878-40e5-8bfa-0db7cc5887da?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D19694638-331c2888-b878-40e5-8bfa-0db7cc5887da%26entityType%3Dcollection%26workspaceId%3Ddb115311-bd17-4c17-8706-8b8073f9afbb#?env%5BDevelopment%5D=W3sia2V5IjoicHJvdG9jb2wiLCJ2YWx1ZSI6Imh0dHAiLCJlbmFibGVkIjp0cnVlLCJ0eXBlIjoiZGVmYXVsdCIsInNlc3Npb25WYWx1ZSI6Imh0dHAiLCJzZXNzaW9uSW5kZXgiOjB9LHsia2V5IjoicWRyYW50X2hvc3QiLCJ2YWx1ZSI6ImxvY2FsaG9zdCIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibG9jYWxob3N0Iiwic2Vzc2lvbkluZGV4IjoxfSx7ImtleSI6InFkcmFudF9wb3J0IiwidmFsdWUiOiI2MzMzIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImRlZmF1bHQiLCJzZXNzaW9uVmFsdWUiOiI2MzMzIiwic2Vzc2lvbkluZGV4IjoyfSx7ImtleSI6InFkcmFudF9ncnBjX3BvcnQiLCJ2YWx1ZSI6IjYzMzQiLCJlbmFibGVkIjp0cnVlLCJ0eXBlIjoiZGVmYXVsdCIsInNlc3Npb25WYWx1ZSI6IjYzMzQiLCJzZXNzaW9uSW5kZXgiOjN9LHsia2V5IjoiYWxpb3RoX2hvc3QiLCJ2YWx1ZSI6ImxvY2FsaG9zdCIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibG9jYWxob3N0Iiwic2Vzc2lvbkluZGV4Ijo0fSx7ImtleSI6ImFsaW90aF9wb3J0IiwidmFsdWUiOiIxMzM3IiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImRlZmF1bHQiLCJzZXNzaW9uVmFsdWUiOiIxMzM3Iiwic2Vzc2lvbkluZGV4Ijo1fSx7ImtleSI6ImNvbGxlY3Rpb25fbmFtZSIsInZhbHVlIjoibW92aWVfY29sbGVjdGlvbiIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibW92aWVfY29sbGVjdGlvbiIsInNlc3Npb25JbmRleCI6Nn1d)
   2. It is designed with scalability in mind and thus the API server and the Celery workers are stateless.
   3. The API server is the primary gateway for resource heavy workloads and is written with [FastAPI](https://fastapi.tiangolo.com/) and served using [Gunicorn](https://gunicorn.org/).
   4. The FastAPI endpoints accept requests and reponses both of which use predefined [pydantic](https://docs.pydantic.dev/latest/) models for the type of requests and responses. All the endpoints that implememnt Qdrant APIs, simply invokes a celery tasks based on the workload the endpoint implements.
@@ -48,7 +49,7 @@
 
 - ### Ingestion Pipeline
   1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for no performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. 
-     > Do remember to disable indexing for the collection if you are going to ingest large amounts of data.
+     > Do remember to disable indexing for the collection from the API if you are going to ingest large amounts of data.
   2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` celery task.
   3. Once a message or payload is `POST`ed to the API, the payload is first add to `ingest` queue and then the invoked tasks is spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
   4. Alioth uses the `.upsert` function of the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
