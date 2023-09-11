@@ -47,16 +47,16 @@
   8. The API Docs are available at `/docs` from the Alioth Endpoint.
 
 - ### Ingestion Pipeline
-  1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. TODO: Link Postman workspace
-  2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` that consumes `ingest` queue.
-  3. Once a message or payload is `POST`ed to the API, the invoked tasks is spawned in an ingestion celery worker takes care of processing the payload and upserting in Qdrant.
-  4. Alioth uses the `.upsert` function on the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
+  1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for no performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. TODO: Link Postman workspace
+  2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` celery task.
+  3. Once a message or payload is `POST`ed to the API, the payload is first add to `ingest` queue and then the invoked tasks is spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
+  4. Alioth uses the `.upsert` function of the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
   5. The ingestion celery worker can be horizonatally scaled based on the rate of ingestion of records. 
 
-- ### Backup & Recovery mechanism
+- ### Backup & Restore mechanism
   
   - #### Backup
-  - #### Recovery
+  - #### Restore
 
 ## Prerequisites
 
