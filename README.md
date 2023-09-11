@@ -44,14 +44,14 @@
   4. The FastAPI endpoints accept requests and reponses both of which use predefined [pydantic](https://docs.pydantic.dev/latest/) models for the type of requests and responses. All the endpoints that implememnt Qdrant APIs, simply invokes a celery tasks based on the workload the endpoint implements.
   5. Celery is an open source asynchronous task queue or job queue which is based on distributed message passing. It basically has a bunch of workers that consumes and processes messages from a  queue (RabbitMQ queue in case of Alioth) and based on the settings stores the result.
   6. The tasks in Celery is any function that is run by the workers, these workers can be scaled horizonatally as well as vertically. As everything is async in celery, it needs a broker to coordinate everything. Celery supports multiple brokers but Alitoh uses RabbitMQ due to it's ease of use AND and it is cost-efficient to run at scale. Redis was considered but as it primarily uses memory to store data it would've been expensive to run at scale and data ingestion doesn't need real-time speed of processing.
-  7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal, it is a huge operational effort and using cloud would've been expensive.
+  7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal is a huge operational effort and using cloud would've been expensive.
   8. The API Docs are available at `/docs` from the Alioth Endpoint.
 
 - ### Ingestion Pipeline
   1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for no performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. 
      > Do remember to disable indexing for the collection from the API if you are going to ingest large amounts of data.
   2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` celery task.
-  3. Once a message or payload is `POST`ed to the API, the payload is first add to `ingest` queue and then the invoked tasks is spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
+  3. Once a message or payload is `POST`ed to the API, the payload is first added to `ingest` queue and then the invoked tasks is spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
   4. Alioth uses the `.upsert` function of the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
   5. The ingestion celery worker can be horizonatally scaled based on the rate of ingestion of records. 
 
@@ -65,14 +65,15 @@
 
   - #### Backup
     1. Alioth supports both collection and full storage snapshots.
-    2. A Celery beat worker periodically invokes backup tasks for collection (`app.tasks.backup.backup_collection`) and storage (`app.tasks.backup.backup_storage`)
+    2. A Celery beat worker periodically invokes backup tasks for collection (`app.tasks.backup.backup_collection`) and storage (`app.tasks.backup.backup_storage`) that is processed by backup celery worker and the queue consumed by the worker is `backup`
     2. These snapshots created periodically (based on `BACKUP_SCHEDULE` env var) are uploaded to **Minio** using `boto3`, So any S3 compliant object storage will work as storage backend.
-    3. The snapshots can also be manually invoked if and when required from the  Alioth REST API endpoints (`/alioth/backup/collection` for collection snapshots and `/alioth/backup/storage/` for storage snapshots.)
+    3. The snapshots can also be manually invoked if and when required from the Alioth REST API endpoints (`/alioth/backup/collection` for collection snapshots and `/alioth/backup/storage/` for storage snapshots). The documentation for the endpoints can be found at `/docs`
   - #### Restore
     1. Qdrant officially only supports collection restoration from the REST API in Cluster Mode (ref: https://qdrant.tech/documentation/concepts/snapshots/#restore-snapshot)
     2. As Alioth is primarily meant to be high scalable it supports only recovery from collection and does **not** support Full Storage recovery although snapshots are created for each Qdrant Replica incase it is needed in a worst case scenario.
     3. Full Storage recovery in distributed mode requires individual access to nodes and clusters have to be set up manually. The Qdrant DB instance has to be started with a CLI flag that points to the snapshot. This requires too much manual intervention and is not possible with Kubernetes as Qdrant is primarily deployed in a distributed mode. It would required writing a Kubernetes Operator that does the legwork.
        > Do note for standalone single node Qdrant DB Instance it is possible to recover from snapshots using the CLI flag (--snapshot) that Qdrant supports.
+    4. The restoration process is manually invoked if and when required from the Alioth REST API endpoints(`/alioth/restore/collection`). This invokes a (`app.tasks.restore.restore_collection`) celery tasks that is processed and run by restore celery worker and queue consumed by the worker is `restore`
 
 ## Prerequisites
 
@@ -87,11 +88,26 @@
     2. Install Helm for deploying to Kubernetes (ref: https://helm.sh/docs/intro/install/#through-package-managers)
  
 ## Development
+  - Assuming the prerequisites are properly satified, run the following commands to get the Development environment up and running
+     1. Set up pyenv and poetry: `make deps`
+     2. Get the upstream services up and running: `make dev-services`
+     3. (Optional) Create a `.env` file for the environment variables that you want to override. All the supported environment variabled (OR) settings can be found in `app/settings.py`
+     4. To start the various services on local w/o docker use:
+          1. `make run-alioth` - Run alioth API with gunicorn
+          2. `make spawn-ingestion-celery-worker` - Spawn celery ingesetion worker
+          3. `make spawn-restore-celery-worker` - Spawn celery restoration worker
+          4. `make spawn-backup-celery-worker` - Spawn celery backup worker
+          5. `make spawn-celery-beat-worker` - Spawn celery beat worker
+     5. To build a docker image use:
+          1. Setup buildx instance for cross-platform images: `make setup-buildx`
+          2. Build docker image: `make build` (Optional: You can set the environment variables `AUTHOR` `APPLICATION` `VERSION` at runtime to change the image repo and version)
+     6. (Optional) To deploy Alioth on a k3d cluster with local image use: `make deploy-alioth-with-local-image`
+     7. (Optional) To restart Alioth services on kubernetes use: `make k3d-restart-deployments`
 
 ## Deploy
 
 - ### Kubernetes
-    Kubernetes is the recommended way to deploy alioth as it abstracts away and takes care of many issues involved in building a high-scalable system that can ingest data at a very fast rate. 
+    Kubernetes is the recommended way to deploy Alioth as it abstracts away and takes care of many issues involved in building a high-scalable system that can ingest data at a very fast rate. 
 
     Although **Alioth** can be deployed on any Kubernetes cluster for demo purposes we are going to use K3d locally.
 
@@ -101,8 +117,12 @@
        ```
     2. #### Deploy using Helm
        ```bash
-         make deploy-alioth-with-upstream-image
+          make deploy-alioth-with-upstream-image
         ```
+    3. #### Get the service endpoints for accessing from local
+      ```bash
+         make welcome_k8s
+      ```
       
 - ### Docker-compose (Not recommended)
    A barebones version of **Alioth** without any observability or multiple application replicas can be deployed using docker-compose although it's not recommended.
@@ -120,8 +140,9 @@
 - ### Setup and Configuration
   1. Get the IP of the Qdrant Host (or) Service as well as the REST API Port for Kubernetes as well as docker-compose based deployments and set them as environment variables `QDRANT_DB_HOST` and `QDRANT_DB_PORT` respectively.
      
-     1. Docker-compose
-     2. Kubernetes
+     1. **Docker-compose**
+        
+     2. **Kubernetes**
   
   2. (Optional) Set the `ALIOTH_LOAD_TEST_BATCH_SIZE` environment variable using `export ALIOTH_LOAD_TEST_BATCH_SIZE=n`  if required
   4. Run the command: 
@@ -146,10 +167,10 @@ Other than these services that are explicitly deployed for observability, variou
 
   > Due to time constraint reasons only a custom-made Qdrant Dashboard is pre-loaded in Grafana and 2 alerts are created for alert-manager. More dashboards and alerts are on the way :))
 - ### Dashboards
-  - Qdrant Dashboard
+  - Qdrant Dashboard TODO:
 - ### Alerts
-  1. InstanceDown
-  2. QdrantNodeDown
+  1. InstanceDown TODO:
+  2. QdrantNodeDown TODO:
 
 ## Makefile Usage
 - The following targets are available in the `Makefile` to make setting things up as well as deploying and cleaning up environments easier and predictable manner.
@@ -162,7 +183,7 @@ Other than these services that are explicitly deployed for observability, variou
 - Improve health checks for all internal services.
 - Implement Kubernetes Event-driven Autoscaling (KEDA) for scaling celery workers and Alioth API based on metrics such as Ready Messages in RabbitMQ, Database load experienced by Qdrant or the rate of data ingestion by Alioth API, etc.(ref: https://keda.sh/)
 - Periodic clearing of snapshots to save costs on resources
-- Right-size alioth API and workers by observing their resource usage to run a cost-efficient service at scale
+- Right-size Alioth API and workers by observing their resource usage to run a cost-efficient service at scale
 - Write end-to-end tests
 - Setup flower for celery-specific monitoring (ref: https://flower.readthedocs.io/en/latest/)
 - Improve helm chart documentation (ref: https://github.com/norwoodj/helm-docs)
