@@ -6,6 +6,9 @@
 ## Contents
 - [Introduction](#introduction)
 - [Architecture](#architecture)
+  - [Overview](#overview)
+  - [Ingestion Pipeline](#ingestion-pipeline)
+  - [Backup & Restore Mechanism](#backup-restore-machanism)
 - [Prerequisites](#prerequisites)
   - [For Development](#for-development)
   - [For Deployment](#for-deployment)
@@ -32,7 +35,28 @@
 5. Observability and performance monitoring is configured using Grafana, Prometheus, Alert-manager and various exporters (ref: [Observability](#observability))
 
 ## Architecture
-1. Each component is designed for a very specific function
+
+- ### Overview
+  1. Alioth doesn't reimplement all the API endpoints available in Qdrant, it only implements endpoints that require resources and can be scaled horizontally. 
+  2. It is designed with scalability in mind and thus the API server and the Celery workers are stateless.
+  3. The API server is the primary gateway for resource heavy workloads and is written with [FastAPI](https://fastapi.tiangolo.com/) and served using [Gunicorn](https://gunicorn.org/).
+  4. The FastAPI endpoints accept requests and reponses both of which use predefined [pydantic](https://docs.pydantic.dev/latest/) models for the type of requests and responses. All the endpoints that implememnt Qdrant APIs, simply invokes a celery tasks based on the workload the endpoint implements.
+  5. Celery is an open source asynchronous task queue or job queue which is based on distributed message passing. It basically has a bunch of workers that consumes and processes messages from a  queue (RabbitMQ queue in case of Alioth) and based on the settings stores the result.
+  6. The tasks in Celery is any function that is run by the workers, these workers can be scaled horizonatally as well as vertically. As everything is async in celery, it needs a broker to coordinate everything. Celery supports multiple brokers but Alitoh uses RabbitMQ due to it's ease of use AND and it is cost-efficient to run at scale. Redis was considered but as it primarily uses memory to store data it would've been expensive to run at scale and data ingestion doesn't need real-time speed of processing.
+  7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal, it is a huge operational effort and using cloud would've been expensive.
+  8. The API Docs are available at `/docs` from the Alioth Endpoint.
+
+- ### Ingestion Pipeline
+  1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. TODO: Link Postman workspace
+  2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` that consumes `ingest` queue.
+  3. Once a message or payload is `POST`ed to the API, the invoked tasks is spawned in an ingestion celery worker takes care of processing the payload and upserting in Qdrant.
+  4. Alioth uses the `.upsert` function on the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
+  5. The ingestion celery worker can be horizonatally scaled based on the rate of ingestion of records. 
+
+- ### Backup & Recovery mechanism
+  
+  - #### Backup
+  - #### Recovery
 
 ## Prerequisites
 
@@ -104,7 +128,7 @@ Other than these services that are explicitly deployed for observability, variou
 
   As the monitoring stack is deployed on Kubernetes, Prometheus uses service discovery for finding all the metrics endpoints and scraping them. Configuring custom scraping rules is not required.
 
-  > Due to time constraint reasons only a custom-made Qdrant Dashboard is pre-loaded in Grafana and 2 alerts are created for alert-manager. More dashboards and alerts are on the way :)
+  > Due to time constraint reasons only a custom-made Qdrant Dashboard is pre-loaded in Grafana and 2 alerts are created for alert-manager. More dashboards and alerts are on the way :))
 - ### Dashboards
   - Qdrant Dashboard
 - ### Alerts
