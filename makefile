@@ -76,7 +76,7 @@ deploy-alioth-with-local-image:
 deploy-alioth-with-upstream-image:
 	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) docker pull ghcr.io/$(AUTHOR)/$(APPLICATION):$(VERSION) 
 	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) k3d image import -c 'alioth' ghcr.io/$(AUTHOR)/$(APPLICATION):$(VERSION) 
-	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml --set alioth.image.repository="ghcr.io/$(AUTHOR)/$(APPLICATION) --set alioth.image.tag="$(VERSION)"
+	AUTHOR=$(AUTHOR) APPLICATION=$(APPLICATION) cd deploy/ && helm upgrade --install alioth . --debug -f env/values.local.yaml --set alioth.image.repository="ghcr.io/$(AUTHOR)/$(APPLICATION)" --set alioth.image.tag="$(VERSION)" --set alioth.pullPolicy="Always"
 
 delete-alioth-deployment:
 	helm uninstall alioth 
