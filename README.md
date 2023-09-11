@@ -93,7 +93,7 @@
      2. Get the upstream services up and running: `make dev-services`
      3. (Optional) Create a `.env` file for the environment variables that you want to override. All the supported environment variabled (OR) settings can be found in `app/settings.py`
      4. To start the various services on local w/o docker use:
-          1. `make run-alioth` - Run alioth API with gunicorn
+          1. `make run-alioth` - Run Alioth API with gunicorn
           2. `make spawn-ingestion-celery-worker` - Spawn celery ingesetion worker
           3. `make spawn-restore-celery-worker` - Spawn celery restoration worker
           4. `make spawn-backup-celery-worker` - Spawn celery backup worker
@@ -101,8 +101,11 @@
      5. To build a docker image use:
           1. Setup buildx instance for cross-platform images: `make setup-buildx`
           2. Build docker image: `make build` (Optional: You can set the environment variables `AUTHOR` `APPLICATION` `VERSION` at runtime to change the image repo and version)
-     6. (Optional) To deploy Alioth on a k3d cluster with local image use: `make deploy-alioth-with-local-image`
-     7. (Optional) To restart Alioth services on kubernetes use: `make k3d-restart-deployments`
+     6. (Optional) To create a k3d cluster for testing w/ Kubernetes use: `make k3d-cluster`   
+     7. (Optional) To deploy Alioth on a k3d cluster with local image use: `make deploy-alioth-with-local-image`
+     8. (Optional) To get the service endpoints for accessing the Alioth deployed on K8s use: `make welcome_k8s`
+     9. (Optional) To restart Alioth services on kubernetes use: `make k3d-restart-deployments`
+     10. (Optional) To delete Kubernetes environment including the cluster use: `make clean`
 
 ## Deploy
 
@@ -140,9 +143,9 @@
 - ### Setup and Configuration
   1. Get the IP of the Qdrant Host (or) Service as well as the REST API Port for Kubernetes as well as docker-compose based deployments and set them as environment variables `QDRANT_DB_HOST` and `QDRANT_DB_PORT` respectively.
      
-     1. **Docker-compose**
+     1. **Docker-compose** TODO
         
-     2. **Kubernetes**
+     2. **Kubernetes** TODO
   
   2. (Optional) Set the `ALIOTH_LOAD_TEST_BATCH_SIZE` environment variable using `export ALIOTH_LOAD_TEST_BATCH_SIZE=n`  if required
   4. Run the command: 
@@ -171,11 +174,6 @@ Other than these services that are explicitly deployed for observability, variou
 - ### Alerts
   1. InstanceDown TODO:
   2. QdrantNodeDown TODO:
-
-## Makefile Usage
-- The following targets are available in the `Makefile` to make setting things up as well as deploying and cleaning up environments easier and predictable manner.
-
-  1. 
 
 ## API Usage
 
