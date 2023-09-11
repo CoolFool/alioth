@@ -102,11 +102,11 @@
      5. To build a docker image use:
           1. Setup buildx instance for cross-platform images: `make setup-buildx`
           2. Build docker image: `make build` (Optional: You can set the environment variables `AUTHOR` `APPLICATION` `VERSION` at runtime to change the image repo and version)
-     6. (Optional) To create a k3d cluster for testing w/ Kubernetes use: `make k3d-cluster`   
-     7. (Optional) To deploy Alioth on a k3d cluster with local image use: `make deploy-alioth-with-local-image`
-     8. (Optional) To get the service endpoints for accessing the Alioth deployed on K8s use: `make welcome_k8s`
-     9. (Optional) To restart Alioth services on kubernetes use: `make k3d-restart-deployments`
-     10. (Optional) To delete Kubernetes environment including the cluster use: `make clean`
+     6. (Optional) To create a k3d cluster for testing w/ Kubernetes, use: `make k3d-cluster`   
+     7. (Optional) To deploy Alioth on a k3d cluster with local image, use: `make deploy-alioth-with-local-image`
+     8. (Optional) To get the service endpoints for accessing the Alioth deployed on K8s, use: `make welcome_k8s`
+     9. (Optional) To restart Alioth services on kubernetes, use: `make k3d-restart-deployments`
+     10. (Optional) To delete Kubernetes environment including the cluster, use: `make clean`
 
 ## Deploy
 
