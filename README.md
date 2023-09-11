@@ -27,11 +27,11 @@
 - [License](#license)
 
 ## Introduction
-1. Alioth is a Python application that uses Celery with RabbitMQ as broker and backend to ingest data at a very high rate into a distributed Qdrant Vector DB Cluster hosted primarily on Kubernetes.
-2. It is designed with a goal to make it as easy as possible to be scaled horizonatally.
-3. It supports automatic snapshotting and backup for collections as well as Qdrant host storage to any S3 Compliant Object Storage such as AWS S3, Minio etc.
-4. There is an easy to use recovery mechanism that can restore a collection on a Qdrant host from the snapshots that are stored in S3 Compliant Object storage.
-5. Observability and performance monitoring is configured using Grafana, Prometheus, Alert-manager and various exporters (ref: [Observability](#observability))
+1. Alioth is a Python application that uses Celery with RabbitMQ as a broker and backend to ingest data at a very high rate into a distributed Qdrant Vector DB Cluster hosted primarily on Kubernetes.
+2. It is designed with a goal to make it as easy as possible to be scaled horizontally.
+3. It supports automatic snapshotting and backup for collections as well as Qdrant host storage to any S3 Compliant Object Storage such as AWS S3, Minio, etc.
+4. There is an easy-to-use recovery mechanism that can restore a collection on a Qdrant host from the snapshots that are stored in S3 Compliant Object storage.
+5. Observability and performance monitoring is configured using Grafana, Prometheus, Alert-manager, and various exporters (ref: [Observability](#observability))
 
 ## Architecture
 
@@ -39,23 +39,23 @@
   1. Alioth doesn't reimplement all the API endpoints available in Qdrant, it only implements endpoints that require resources and can be scaled horizontally.
      > To make it easier to use the Upstream Qdrant API use this Postman collection that implements the commonly used APIs. Do remember to set the appropriate variables by clicking on the Collection and going to Variables [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/19694638-331c2888-b878-40e5-8bfa-0db7cc5887da?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D19694638-331c2888-b878-40e5-8bfa-0db7cc5887da%26entityType%3Dcollection%26workspaceId%3Ddb115311-bd17-4c17-8706-8b8073f9afbb#?env%5BDevelopment%5D=W3sia2V5IjoicHJvdG9jb2wiLCJ2YWx1ZSI6Imh0dHAiLCJlbmFibGVkIjp0cnVlLCJ0eXBlIjoiZGVmYXVsdCIsInNlc3Npb25WYWx1ZSI6Imh0dHAiLCJzZXNzaW9uSW5kZXgiOjB9LHsia2V5IjoicWRyYW50X2hvc3QiLCJ2YWx1ZSI6ImxvY2FsaG9zdCIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibG9jYWxob3N0Iiwic2Vzc2lvbkluZGV4IjoxfSx7ImtleSI6InFkcmFudF9wb3J0IiwidmFsdWUiOiI2MzMzIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImRlZmF1bHQiLCJzZXNzaW9uVmFsdWUiOiI2MzMzIiwic2Vzc2lvbkluZGV4IjoyfSx7ImtleSI6InFkcmFudF9ncnBjX3BvcnQiLCJ2YWx1ZSI6IjYzMzQiLCJlbmFibGVkIjp0cnVlLCJ0eXBlIjoiZGVmYXVsdCIsInNlc3Npb25WYWx1ZSI6IjYzMzQiLCJzZXNzaW9uSW5kZXgiOjN9LHsia2V5IjoiYWxpb3RoX2hvc3QiLCJ2YWx1ZSI6ImxvY2FsaG9zdCIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibG9jYWxob3N0Iiwic2Vzc2lvbkluZGV4Ijo0fSx7ImtleSI6ImFsaW90aF9wb3J0IiwidmFsdWUiOiIxMzM3IiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImRlZmF1bHQiLCJzZXNzaW9uVmFsdWUiOiIxMzM3Iiwic2Vzc2lvbkluZGV4Ijo1fSx7ImtleSI6ImNvbGxlY3Rpb25fbmFtZSIsInZhbHVlIjoibW92aWVfY29sbGVjdGlvbiIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2Vzc2lvblZhbHVlIjoibW92aWVfY29sbGVjdGlvbiIsInNlc3Npb25JbmRleCI6Nn1d)
   2. It is designed with scalability in mind and thus the API server and the Celery workers are stateless.
-  3. The API server is the primary gateway for resource heavy workloads and is written with [FastAPI](https://fastapi.tiangolo.com/) and served using [Gunicorn](https://gunicorn.org/).
-  4. The FastAPI endpoints accept requests and reponses both of which use predefined [pydantic](https://docs.pydantic.dev/latest/) models for the type of requests and responses. All the endpoints that implememnt Qdrant APIs, simply invokes a celery tasks based on the workload the endpoint implements.
-  5. Celery is an open source asynchronous task queue or job queue which is based on distributed message passing. It basically has a bunch of workers that consumes and processes messages from a  queue (RabbitMQ queue in case of Alioth) and based on the settings stores the result.
-  6. The tasks in Celery is any function that is run by the workers, these workers can be scaled horizonatally as well as vertically. As everything is async in celery, it needs a broker to coordinate everything. Celery supports multiple brokers but Alitoh uses RabbitMQ due to it's ease of use AND and it is cost-efficient to run at scale. Redis was considered but as it primarily uses memory to store data it would've been expensive to run at scale and data ingestion doesn't need real-time speed of processing.
-  7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal is a huge operational effort and using cloud would've been expensive.
+  3. The API server is the primary gateway for resource-heavy workloads and is written with [FastAPI](https://fastapi.tiangolo.com/) and served using [Gunicorn](https://gunicorn.org/).
+  4. The FastAPI endpoints accept requests and responses both of which use predefined [pydantic](https://docs.pydantic.dev/latest/) models for the type of requests and responses. All the endpoints that implement Qdrant APIs simply invoke celery tasks based on the workload the endpoint implements.
+  5. Celery is an open-source asynchronous task queue or job queue which is based on distributed message passing. It basically has a bunch of workers that consume and process messages from a  queue (RabbitMQ queue in the case of Alioth) and based on the settings stores the result.
+  6. The tasks in Celery are any function that is run by the workers, these workers can be scaled horizontally as well as vertically. As everything is async in celery, it needs a broker to coordinate everything. Celery supports multiple brokers but Alitoh uses RabbitMQ due to its ease of use and it is cost-efficient to run at scale. Redis was considered but as it primarily uses memory to store data it would've been expensive to run at scale and data ingestion doesn't need real-time speed of processing.
+  7. Kafka was also considered but Celery doesn't officially support it and most importantly running self-hosted Kafka on Kubernetes or bare-metal is a huge operational effort and using the cloud would've been expensive.
   8. The API Docs are available at `/docs` from the Alioth Endpoint.
 
 - ### Ingestion Pipeline
-  1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply because it would just act as proxy and increase latency for no performance gain. Collections are highly configurable and has lots of params that the user has to be aware of and abstracting it away is not the way to go. 
+  1. The user has to create a collection manually by using Qdrant API or Client libraries. The reason to NOT include a collection endpoint in Alioth is simply that it would just act as a proxy and increase latency for no performance gain. Collections are highly configurable and have lots of parameters that the user has to be aware of and abstracting them away is not the way to go. 
      > Do remember to disable indexing for the collection from the API if you are going to ingest large amounts of data.
-  2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request, and invokes `app.tasks.ingestion.ingest` celery task.
-  3. Once a message or payload is `POST`ed to the API, the payload is first added to `ingest` queue and then the invoked tasks is spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
+  2. The ingestion endpoint (`/alioth/ingest`) accepts Post Request and invokes `app.tasks.ingestion.ingest` celery task.
+  3. Once a message or payload is `POST`ed to the API, the payload is first added to the `ingest` queue, and then the invoked tasks are spawned by the ingestion celery worker that consumes the `ingest` queue and takes care of processing the payload and upserting it in Qdrant DB.
   4. Alioth uses the `.upsert` function of the Qdrant Client and uses batches to upsert data into Qdrant DB as it can handle single as well as multiple records.  
-  5. The ingestion celery worker can be horizonatally scaled based on the rate of ingestion of records. 
+  5. The ingestion celery worker can be horizontally scaled based on the rate of ingestion of records. 
 
 - ### Backup & Restore mechanism
-   1. You need to configure the following config files and environment variables before using Backup and Recovery mechanism implemented in Alioth **IF** you are setting it up manually.
+   1. You need to configure the following config files and environment variables before using the Backup and Recovery mechanism implemented in Alioth **IF** you are setting it up manually.
       > You don't need to configure these config files and environment variables if you are using the supported deployments method as both of them use sane defaults and should work OOTB.
       1. Create two files `collections.json` & `hosts.json` and mount in appropriately in Alioth API and Celery Workers. Example format for these files can be found at `config/`
       2. Set the Environment Variables `QDRANT_DB_HOSTS_JSON_PATH` and `QDRANT_DB_COLLECTIONS_JSON_PATH` to point to the path where the `collections.json` and `hosts.json` are mounted
@@ -64,15 +64,15 @@
 
   - #### Backup
     1. Alioth supports both collection and full storage snapshots.
-    2. A Celery beat worker periodically invokes backup tasks for collection (`app.tasks.backup.backup_collection`) and storage (`app.tasks.backup.backup_storage`) that is processed by backup celery worker and the queue consumed by the worker is `backup`
-    2. These snapshots created periodically (based on `BACKUP_SCHEDULE` env var) are uploaded to **Minio** using `boto3`, So any S3 compliant object storage will work as storage backend.
+    2. A Celery beat worker periodically invokes backup tasks for collection (`app.tasks.backup.backup_collection`) and storage (`app.tasks.backup.backup_storage`) that is processed by the backup celery worker and the queue consumed by the worker is `backup`
+    2. These snapshots created periodically (based on `BACKUP_SCHEDULE` env var) are uploaded to **Minio** using `boto3`, So any S3-compliant object storage will work as storage backend.
     3. The snapshots can also be manually invoked if and when required from the Alioth REST API endpoints (`/alioth/backup/collection` for collection snapshots and `/alioth/backup/storage/` for storage snapshots). The documentation for the endpoints can be found at `/docs`
   - #### Restore
     1. Qdrant officially only supports collection restoration from the REST API in Cluster Mode (ref: https://qdrant.tech/documentation/concepts/snapshots/#restore-snapshot)
-    2. As Alioth is primarily meant to be high scalable it supports only recovery from collection and does **not** support Full Storage recovery although snapshots are created for each Qdrant Replica incase it is needed in a worst case scenario.
-    3. Full Storage recovery in distributed mode requires individual access to nodes and clusters have to be set up manually. The Qdrant DB instance has to be started with a CLI flag that points to the snapshot. This requires too much manual intervention and is not possible with Kubernetes as Qdrant is primarily deployed in a distributed mode. It would required writing a Kubernetes Operator that does the legwork.
+    2. As Alioth is primarily meant to be highly scalable it supports only recovery from collection and does **not** support Full Storage recovery although snapshots are created for each Qdrant Replica in case it is needed in a worst-case scenario.
+    3. Full Storage recovery in distributed mode requires individual access to nodes and clusters have to be set up manually. The Qdrant DB instance has to be started with a CLI flag that points to the snapshot. This requires too much manual intervention and is not possible with Kubernetes as Qdrant is primarily deployed in a distributed mode. It would be required to write a Kubernetes Operator that does the legwork.
        > Do note for standalone single node Qdrant DB Instance it is possible to recover from snapshots using the CLI flag (--snapshot) that Qdrant supports.
-    4. The restoration process is manually invoked if and when required from the Alioth REST API endpoints(`/alioth/restore/collection`). This invokes a (`app.tasks.restore.restore_collection`) celery tasks that is processed and run by restore celery worker and queue consumed by the worker is `restore`
+    4. The restoration process is manually invoked if and when required from the Alioth REST API endpoints(`/alioth/restore/collection`). This invokes a (`app.tasks.restore.restore_collection`) celery tasks that are processed and run by the restore celery worker and the queue consumed by the worker is `restore`
 
 ## Prerequisites
 
@@ -88,13 +88,13 @@
     2. Install Helm for deploying to Kubernetes (ref: https://helm.sh/docs/intro/install/#through-package-managers)
  
 ## Development
-  - Assuming the prerequisites are properly satified and you are in the root Project directory, run the following commands to get the Development environment up and running
+  - Assuming the prerequisites are properly satisfied and you are in the root Project directory, run the following commands to get the Development environment up and running
      1. Set up pyenv and poetry: `make deps`
      2. Get the upstream services up and running: `make dev-services`
-     3. (Optional) Create a `.env` file for the environment variables that you want to override. All the supported environment variabled (OR) settings can be found in `app/settings.py`
-     4. To start the various services on local w/o docker run:
+     3. (Optional) Create a `.env` file for the environment variables that you want to override. All the supported environment variables (OR) settings can be found in `app/settings.py`
+     4. To start the various services locally w/o docker run:
           1. `make run-alioth` - Run Alioth API with gunicorn
-          2. `make spawn-ingestion-celery-worker` - Spawn celery ingesetion worker
+          2. `make spawn-ingestion-celery-worker` - Spawn celery ingestion worker
           3. `make spawn-restore-celery-worker` - Spawn celery restoration worker
           4. `make spawn-backup-celery-worker` - Spawn celery backup worker
           5. `make spawn-celery-beat-worker` - Spawn celery beat worker
@@ -141,7 +141,7 @@
   3. A payload (or) record is randomly generated from a movie dataset and a batch of `100` (default) is ingested at a time. The batch size can be configured by setting the environment variable `ALIOTH_LOAD_TEST_BATCH_SIZE` at runtime
   4. The vectors as previously stated are of size `100` and they are randomly generated at runtime.
 - ### Setup and Configuration
-  1. Get the IP of the Qdrant Host (or) Service as well as the REST API Port for Kubernetes as well as docker-compose based deployments and set them as environment variables `QDRANT_DB_HOST` and `QDRANT_DB_PORT` respectively.
+  1. Get the IP of the Qdrant Host (or) Service as well as the REST API Port for Kubernetes as well as docker-compose-based deployments and set them as environment variables `QDRANT_DB_HOST` and `QDRANT_DB_PORT` respectively.
      
      1. **Docker-compose** TODO
         
