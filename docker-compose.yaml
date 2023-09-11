@@ -35,7 +35,7 @@ services:
     container_name: alioth
     image: ghcr.io/coolfool/alioth:main
     ports:
-      - "2337:1337"
+      - "1337:1337"
     entrypoint: /bin/bash
     command: -c "make run-alioth"
     environment:
