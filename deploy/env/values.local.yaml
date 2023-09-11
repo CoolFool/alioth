@@ -49,6 +49,8 @@ minio:
       memory: 1Gi
 
 prometheus:
+  prometheus-pushgateway:
+      enabled: false
   alertmanager:
     enabled: true
   server:
