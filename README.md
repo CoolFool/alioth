@@ -12,25 +12,27 @@
 - [Development](#development)
 - [Deploy](#deploy)
   - [Kubernetes](#kubernetes)
-  - [Docker-Compose (Not Recommended) ](#docker-compose)
+  - [Docker-Compose (Not Recommended) ](#docker-compose-not-recommended)
 - [Load Test](#load-test)
-   - [Introduction](#introduction)
-   - [Setup and Testing](#setup-and-testing)
+   - [Setup and Configuration](#setup-and-configuration)
 - [Observability](#observability)
-  - [Introduction](#introduction)
   - [Dashboards](#dashboards)
   - [Alerts](#alerts)
 - [Makefile Usage](#makefile-usage)
+- [API Usage](#api-usage)
 - [Further Improvements & Ideas](#further-improvements--ideas)
 - [Authors](#authors)
 - [License](#license)
 
 ## Introduction
-1. Alioth is a Python application that uses Celery with RabbitMQ as broker and backend to ingest data in a distributed Qdrant Vector database
-2. 
+1. Alioth is a Python application that uses Celery with RabbitMQ as broker and backend to ingest data at a very high rate into a distributed Qdrant Vector DB Cluster hosted primarily on Kubernetes.
+2. It is designed with a goal to make it as easy as possible to be scaled horizonatally.
+3. It supports automatic snapshotting and backup for collections as well as storage(disks) to any S3 Compliant Object Storage such as AWS S3, Minio etc.
+4. There is an easy to use recovery mechanism that can restore a collection on a Qdrant host from the snapshots that are stored in S3 Compliant Object storage.
+5. Observability and performance monitoring is configured using Grafana, Prometheus, Alert-manager and various exporters (ref: [Observability](#observability))
 
 ## Architecture
-1. 
+1. Each component is designed for a very specific function
 
 ## Prerequisites
 
@@ -110,9 +112,11 @@ Other than these services that are explicitly deployed for observability, variou
   2. QdrantNodeDown
 
 ## Makefile Usage
-- The following targets are available in the `Makefile`
+- The following targets are available in the `Makefile` to make setting things up as well as deploying and cleaning up environments easier and predictable manner.
 
   1. 
+
+## API Usage
 
 ## Further Improvements & Ideas:
 - Improve health checks for all internal services.
