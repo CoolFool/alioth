@@ -5,7 +5,10 @@ from app.tasks.celery_app import app
 from app.tasks.utils import restore_collection_handler
 
 """
-In distributed mode, full storage recovery can't be performed using the API. Only collection restoration is supported
+In distributed mode, full storage recovery can't be performed using the API. Only collection restoration is supported.
+Restoring the collection means restoing the "collection" on a "host" 
+(OR) 
+reseting the state of the collection on a host to a particular point in time (i.e time of backup)
 """
 
 

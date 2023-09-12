@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 @app.task()
 def ingest(batch):
+    """
+    We use the official Qdrant Library with .upsert with "batch" because we don't have to create a new PointStruct object for every point being insserted.
+    """
     client = QdrantClient(
         host=settings.QDRANT_DB_HOST,
         port=settings.QDRANT_DB_PORT,

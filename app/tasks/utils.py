@@ -33,6 +33,9 @@ def get_latest_snapshot(s3, prefix):
 
 def get_snapshot_signed_url_from_s3(s3, prefix):
     latest_snapshot = get_latest_snapshot(s3=s3, prefix=prefix)
+    if latest_snapshot is None:
+        logger.error(f"-> Snapshot not found with prefix {prefix}")
+        return None, None
     url = s3.generate_presigned_url(
         ClientMethod="get_object",
         Params={"Bucket": settings.S3_BUCKET_NAME, "Key": latest_snapshot["Key"]},
@@ -65,11 +68,14 @@ def restore_collection_handler(host, collection_name, snapshot_url):
             endpoint_url=settings.AWS_ENDPOINT_URL,
             config=Config(signature_version="s3v4"),
         )
-        prefix = f"collection/{collection_name}"
+        prefix = f"collection/{host.host}/{collection_name}"
         logger.info("-> Generating S3 Pre-signed URL")
         snapshot_path,latest_snapshot = get_snapshot_signed_url_from_s3(s3_client, prefix)
+        if snapshot_path is None or latest_snapshot is None:
+            logger.error(f"-> Snapshot not found for host {host.host}")
+            return
     logger.info(
-        f"-> Starting recovery process for collection {collection_name} on host {host.host} with snapshot {latest_snapshot}"
+        f"-> Starting recovery process for collection {collection_name} on host {host.host} with snapshot {latest_snapshot['Key']}"
     )
     return recover_collection_from_snapshot(host, snapshot_path, collection_name)
 
@@ -221,7 +227,7 @@ def get_hosts_for_backup():
 
 def backup_collection_handler(client, collection_name, snapshot):
     snapshot_url = f"http://{client._client._host}:{client._client._port}/collections/{collection_name}/snapshots/{snapshot.name}"
-    prefix = f"collection/{collection_name}"
+    prefix = f"collection/{client._client._host}/{collection_name}"
     logger.info(
         f"Starting backup handling process with snapshot: {snapshot.name} on host {client._client._host}"
     )
