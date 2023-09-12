@@ -89,7 +89,8 @@
    2. Install poetry for Python dependency management. (ref: https://python-poetry.org/docs/#installation)
    3. Install and configure docker w/ docker-compose (ref: https://docs.docker.com/engine/install/)
    4. Make sure `make` is properly installed and verify using  `make --help`
-   5. Clone Alioth using `git clone git@github.com:CoolFool/alioth.git` (SSH) or `git clone https://github.com/CoolFool/alioth.git` (HTTPS)
+   5. Install OpenLens for accessing Kubernetes through a GUI (ref: https://github.com/MuhammedKalkan/OpenLens?tab=readme-ov-file#installation)
+   6. Clone Alioth using `git clone git@github.com:CoolFool/alioth.git` (SSH) or `git clone https://github.com/CoolFool/alioth.git` (HTTPS)
   
 -  ### For deployment
     1. Install K3d for a Kubernetes Cluster (ref: https://k3d.io/v5.6.0/#install-current-latest-release)
@@ -173,6 +174,7 @@
     Set the environment variables using `export QDRANT_DB_HOST=<host>` & `export QDRANT_DB_PORT=<port>`
   
   2. (Optional) Set the `ALIOTH_LOAD_TEST_BATCH_SIZE` environment variable using `export ALIOTH_LOAD_TEST_BATCH_SIZE=n`  if required
+  3. (Optional) If you haven't setup the development environment as documented above, run `make deps` first to install the dependencies required by locust.
   4. Run the command: 
         ```bash 
            make load-test-alioth

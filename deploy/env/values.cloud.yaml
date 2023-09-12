@@ -65,7 +65,7 @@ prometheus:
               expr: up == 0
               for: 5m
               labels:
-                priority: P0
+                priority: P1
               annotations:
                 description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
                 summary: 'Instance {{ $labels.instance }} down'
@@ -73,12 +73,32 @@ prometheus:
           rules:
             - alert: QdrantNodeDown
               expr: app_info{app="qdrant"} < 1
-              for: 5s
+              for: 0m
               labels:
-                priority: P0
+                priority: P1
               annotations:
                 description: '{{ $labels.instance }} Qdrant node has been down for more than 30 seconds'
                 summary: 'Qdrant instance ({{ $labels.instance }}) is down'
+        - name: RabbitMQ
+          rules:
+            - alert: RabbitmqNodeDown
+              expr: sum(rabbitmq_build_info) < 3
+              for: 0m
+              labels:
+                priority: P1
+              annotations:
+                summary: Rabbitmq node down (instance {{ $labels.instance }})
+                description: "Less than 3 nodes running in RabbitMQ cluster\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - name: Gunicorn
+          rules:
+            - alert: GunicornWorkersDown
+              expr: sum(gunicorn_workers) < 4
+              for: 0m
+              labels:
+                priority: P1
+              annotations:
+                summary: Gunicorn worker down (instance {{ $labels.instance }})
+                description: "Gunicorn has less than 4 workers\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
 grafana:
   adminUser: admin
@@ -93,11 +113,31 @@ grafana:
         type: prometheus
         url: http://alioth-prometheus-server
         isDefault: true
+  dashboardProviders:
+   dashboardproviders.yaml:
+     apiVersion: 1
+     providers:
+     - name: 'default'
+       orgId: 1
+       folder: ''
+       type: file
+       disableDeletion: false
+       editable: true
+       options:
+         path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: "grafana-dashboards"
+
 
 celery-exporter:
   env:
     - name: CE_BROKER_URL
       value: amqp://user:supersecret@rabbitmq.default.svc.cluster.local:5672/
+  service:
+    annotations:
+      prometheus.io/path: "/metrics"
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9808"
 
 prometheus-statsd-exporter:
   service:
