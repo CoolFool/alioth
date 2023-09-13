@@ -89,12 +89,13 @@
    2. Install poetry for Python dependency management. (ref: https://python-poetry.org/docs/#installation)
    3. Install and configure docker w/ docker-compose (ref: https://docs.docker.com/engine/install/)
    4. Make sure `make` is properly installed and verify using  `make --help`
-   5. Install OpenLens for accessing Kubernetes through a GUI (ref: https://github.com/MuhammedKalkan/OpenLens?tab=readme-ov-file#installation)
-   6. Clone Alioth using `git clone git@github.com:CoolFool/alioth.git` (SSH) or `git clone https://github.com/CoolFool/alioth.git` (HTTPS)
+   5. Clone Alioth using `git clone git@github.com:CoolFool/alioth.git` (SSH) or `git clone https://github.com/CoolFool/alioth.git` (HTTPS)
   
 -  ### For deployment
     1. Install K3d for a Kubernetes Cluster (ref: https://k3d.io/v5.6.0/#install-current-latest-release)
     2. Install Helm for deploying to Kubernetes (ref: https://helm.sh/docs/intro/install/#through-package-managers)
+    3. Install kubectl to access Kubernetes Cluster (https://kubernetes.io/docs/tasks/tools/#kubectl)
+    4. Install OpenLens for accessing Kubernetes through a GUI (ref: https://github.com/MuhammedKalkan/OpenLens?tab=readme-ov-file#installation)
  
 
 <p align="right">(<a href="#top">back to top</a>)</p>
