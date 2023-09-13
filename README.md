@@ -181,6 +181,14 @@
         ```
   5. Visit the locust dashboard at http://0.0.0.0:8089
   6. On the Locust Dashboard Set the **Number of users** to `50`, **Spawn rate** to `5` and set the **Host** to `Alioth Endpoint` that is available from `make welcome_k8s`
+  7. To scale up the replicas in Kubernetes of either the Alioth API or the Celery workers use the following commands based on the deployment you want to scale:
+     ```bash
+        kubectl scale deploy alioth --replicas=2
+        kubectl scale deploy alioth-ingest --replicas=2
+        kubectl scale deploy alioth-backup --replicas=2
+        kubectl scale deploy alioth-restore --replicas=2
+     ```
+     You can of course change the number of replicas to however many you want.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
