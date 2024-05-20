@@ -208,7 +208,6 @@ Other than these services that are explicitly deployed for observability, variou
 
   As the monitoring stack is deployed on Kubernetes, Prometheus uses service discovery for finding all the metrics endpoints and scraping them. Configuring custom scraping rules is not required.
 
-  > Due to time constraint reasons only a custom-made Qdrant Dashboard is pre-loaded in Grafana and 2 alerts are created for alert-manager. More dashboards and alerts are on the way :))
 - ### Dashboards
   - Qdrant Dashboard:
       | Qdrant Dashboard (Summary)  |
